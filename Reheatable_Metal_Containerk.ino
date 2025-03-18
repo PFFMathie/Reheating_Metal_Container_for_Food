@@ -113,13 +113,10 @@ void loop() {
   }
 
   // For the Reed Switch
-  bool lidOpen = digitalRead(REED_SWITCH) == HIGH;
-  if(lidOpen) {
+ bool lidOpen = digitalRead(REED_SWITCH) == LOW;
+  if (lidOpen) {
     digitalWrite(RELAY_PIN, LOW);
     heating = false;
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Lid Opened! Heating Stopped");
   }
 
   if (heating) {
@@ -200,7 +197,13 @@ void startHeating() {
 void stopHeating() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Heating Done!");
+  
+  if(digitalRead(REED_SWITCH) == LOW {
+    lcd.print("Lid's Open! Heating Stopped!");
+  }
+    else {
+    lcd.print("Heating Done!");
+    }
 
   digitalWrite(RELAY_PIN, LOW);
   heating = false;
