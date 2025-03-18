@@ -47,9 +47,6 @@ void setup() {
   // Testing the accuracy of the LM35 sensor Celcius to Faren conversion
   Serial.begin(9600);
 
-  // Set up code for the magnetic 
-  pinMode(REED_SWITCH, INPUT_PULLUP);
-
   // Initiate relay module
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
@@ -112,15 +109,6 @@ void loop() {
     }
   }
 
-  // For the Reed Switch
-  bool lidOpen = digitalRead(REED_SWITCH) == HIGH;
-  if(lidOpen) {
-    digitalWrite(RELAY_PIN, LOW);
-    heating = false;
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Lid Opened! Heating Stopped");
-  }
 
   if (heating) {
     unsigned long elapsedTime = millis() - startTime;
@@ -200,7 +188,6 @@ void startHeating() {
 void stopHeating() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Heating Done!");
 
   digitalWrite(RELAY_PIN, LOW);
   heating = false;
