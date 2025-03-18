@@ -4,7 +4,7 @@
 // them using PTC heating element up to 165 Fahrenheit in the time frame [10, 15, 20]. 
 //
 // Version    YY//MM/DD   Comments
-// =======    =========   ===================================================================================
+// =======    =========   ==============================================================================
 // 1.00       25/02/24    Created the foundation of the coding base of the RMC
 // 1.10       25/02/25    Changed the temp sensor to the LM35 instead of the DHT11
 // 1.20       25/03/02    Converted the Celcius and translated it into Fahrenheit
@@ -13,8 +13,6 @@
 // 1.43       25/03/10    Slight changes to the assigned pins of modules
 // 1.44       25/03/12    Birthday fixing
 // 1.54       25/03/15    Added code to shut of the relay when temperature reaches 165 Fahrenheit
-// 1.64       25/03/16    Redesigned the button codes to efficiently take advantage of the debounce function
-// 1.74       25/03/17    Code for the Reed Switch
 
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -26,10 +24,12 @@
 #define DHT_TYPE DHT11  // Change to DHT11 when using DHT11 comp.
 #define DHT_PIN 8    // DHT Sensor Pin
 #define RELAY_PIN 9  // Relay Module Pin
-#define REED_SWITCH 10 // Magnetic switch for the relay
 
 #define temp_max 165
 #define temp_min 157
+
+const int reed = 10;
+int reedstate;
 
 ezButton button1(7);
 ezButton button2(6);
@@ -45,24 +45,25 @@ unsigned long startTime = 0;
 
 void setup() {
   // Testing the accuracy of the LM35 sensor Celcius to Faren conversion
-  Serial.begin(9600);
+  Serial.begin(9600);  // Wow so many
 
   // Initiate relay module
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW);
+  
+  pinMode(reed, INPUT_PULLUP); // Mode for reed
 
   // Initiate DHT and LCD
   dht.begin();
   lcd.begin(16, 2);
   lcd.backlight();
-  lcd.setCursor(0, 0);
-  lcd.print("Select time:");
 
   // Debounce for the Buttons
   button1.setDebounceTime(50);
   button2.setDebounceTime(50);
   button3.setDebounceTime(50);
   button4.setDebounceTime(50);
+  
 }
 
 void loop() {
@@ -72,13 +73,12 @@ void loop() {
   int temperatureC = voltage * 100;
   int temperatureF = (temperatureC * 9 / 5) + 32;
 
-// Codes for the Buttons 
- button1.loop();
- button2.loop();
- button3.loop();
- button4.loop();
+button1.loop();
+button2.loop();
+button3.loop();
+button4.loop();
 
-
+  // Codes for the Buttons
  if (button1.isPressed()) {
     stopHeating();
   } 
@@ -94,21 +94,19 @@ void loop() {
     heatingTime = 20;
     startHeating();
   }
-  
+
+
 // Temperature-based control of the Relay
 // Uses a Hysteresis-based control code to prevent rapid relay switching 
 // by creating a buffer zone between the temperatures
   if(heating) {
     if(temperatureF >= temp_max) {
       digitalWrite(RELAY_PIN, LOW);
-      heating = false;
     } 
     else if(temperatureF <= temp_min) {
       digitalWrite(RELAY_PIN, HIGH);
-      heating = true;
     }
   }
-
 
   if (heating) {
     unsigned long elapsedTime = millis() - startTime;
@@ -123,7 +121,15 @@ void loop() {
   }
 // Calls forth thy debugging bs
  debugSensors();
-  delay(1000);
+
+  reedstate = digitalRead(reed);
+
+  if(digitalRead(reed) == HIGH) {
+    reedon();
+  } 
+    else {
+      reedoff();
+  }
 }
 
 void printTH() {
@@ -141,14 +147,14 @@ void printTH() {
 
   // Print format: T: <Temperature>F H: <Humidity>%
   lcd.setCursor(0, 0);
-  lcd.print("T: ");
-  lcd.print(temperatureF);
-  lcd.print((char)223);
-  lcd.print("F ");
-  lcd.print("H: ");
-  lcd.print(hum);
-  lcd.print("%  ");
-  delay(200);
+    lcd.print("T: ");
+    lcd.print(temperatureF);
+    lcd.print((char)223);
+    lcd.print("F ");
+    lcd.print("H: ");
+    lcd.print(hum);
+    lcd.print("%  ");
+    delay(200);
 }
 
 // Code for time function in the RMC
@@ -188,14 +194,30 @@ void startHeating() {
 void stopHeating() {
   lcd.clear();
   lcd.setCursor(0, 0);
+  lcd.print("Heating Done!");
 
   digitalWrite(RELAY_PIN, LOW);
   heating = false;
 
   delay(2000);
+  reedon();
+}
+
+void reedoff() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Select time:");
+  lcd.print("Lid Open!");
+  lcd.setCursor(0, 1);
+  lcd.print("Please Close!");
+
+  digitalWrite(RELAY_PIN, LOW);
+  heating = false;
+}
+
+void reedon() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Select Time:");
 }
 
 // Debugging Code
