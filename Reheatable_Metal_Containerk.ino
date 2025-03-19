@@ -125,6 +125,7 @@ button4.loop();
 
   reedstate = digitalRead(reed);
 
+// Continuously reads if the Reed (Magnetic) switch is connected 
   if(digitalRead(reed) == HIGH) {
     reedon();
   } 
