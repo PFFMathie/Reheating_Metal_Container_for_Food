@@ -122,10 +122,10 @@ button4.loop();
   }
 // Calls forth thy debugging bs
  debugSensors();
+   delay(200);
 
   reedstate = digitalRead(reed);
 
-// Continuously reads if the Reed (Magnetic) switch is connected 
   if(digitalRead(reed) == HIGH) {
     reedon();
   } 
