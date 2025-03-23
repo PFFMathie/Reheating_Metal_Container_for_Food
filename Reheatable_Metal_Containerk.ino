@@ -101,11 +101,9 @@ button4.loop();
   if(heating) {
     if(temperatureF >= temp_max) {
       digitalWrite(RELAY_PIN, LOW);
-      heating = false;
     } 
     else if(temperatureF <= temp_min) {
       digitalWrite(RELAY_PIN, HIGH);
-      heating = true;
     }
   }
 
