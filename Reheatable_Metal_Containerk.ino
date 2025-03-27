@@ -13,6 +13,7 @@
 // 1.43       25/03/10    Slight changes to the assigned pins of modules
 // 1.44       25/03/12    Birthday fixing
 // 1.54       25/03/15    Added code to shut of the relay when temperature reaches 165 Fahrenheit
+// 1.55       25/03/25    Code bug fix for the hysteresis shit
 
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
